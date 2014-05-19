@@ -1,0 +1,8 @@
+.parallel ul:first-child {
+  float: left;
+}
+
+.parallel ul:nth-child(2) {
+  float: right;
+  width: 400px;
+}

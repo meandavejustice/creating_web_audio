@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+  <body>
+    <audio controls="controls">
+      <source src="/wizard.mp3" type="audio/mpeg"></source>
+    </audio>
+  </body>
+</html>
+<script type="text/javascript">
+  var arrayBuff = Base64Binary.decodeArrayBuffer(sound);
+	audioContext.decodeAudioData(arrayBuff, function(audioData) {
+		myBuffer = audioData;
+	});
+</script>
