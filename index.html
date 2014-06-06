@@ -182,33 +182,40 @@ var effect = (function() {
                 <a href="http://noisehack.com/custom-audio-effects-javascript-web-audio-api/">http://noisehack.com/custom-audio-effects-javascript-web-audio-api/</a>
             </section>
 
-				<section>
-					  <h2>Creating Visualizations</h2>
-            <pre>
-                <code>
-                     var fft = ctx.createAnalyser();
-                     fft.fftSize = samples;
-                     fft.connect(ctx.destination);
-                     // setup canvas and call update()
+				    <section>
+              <section>
+					      <h2>Creating Visualizations</h2>
+                <pre>
+                  <code>
+                    var fft = ctx.createAnalyser();
+                    fft.fftSize = samples;
+                    fft.connect(ctx.destination);
+                    // setup canvas and call update()
 
-                     // in load function
-                     ctx.decodeAudioData(req.response, function(buf) {
-                       var src = ctx.createBufferSource(); 
-                       src.buffer = buf;
+                    // in load function
+                    ctx.decodeAudioData(req.response, function(buf) {
+                    var src = ctx.createBufferSource(); 
+                    src.buffer = buf;
 
-                       play(src);
-                       //connect them up into a chain
-                       src.connect(fft);
-                     }
+                    play(src);
+                    //connect them up into a chain
+                    src.connect(fft);
+                    }
 
-                     // inside update function
-                     var data = new Uint8Array(samples);
-                     fft.getByteFrequencyData(data);
-                </code>
-            </pre>
-            <a href="http://localhost:8888">fft visual demo</a>
-				</section>
+                    // inside update function
+                    var data = new Uint8Array(samples);
+                    fft.getByteFrequencyData(data);
+                  </code>
+                </pre>
+                <a href="http://localhost:8888">fft visual demo</a>
+				      </section>
 
+              <section>
+                <canvas id="fft" width="300px" height="200px"></canvas>
+                <button class="fftPlay">play</button>
+                <button class="fftStop">stop</button>
+              </section>
+            </section>
         <section>
             <section>
                 <h2>Making Music</h2>
@@ -284,15 +291,26 @@ var effect = (function() {
 	</section>
 
         <section>
-	  <h1>Suggestions?</h1>
-          <br />
-          <br />
+	        <h1>Get Involved</h1>
+          <ul>
+            <li><a href="https://groups.google.com/forum/#!forum/web-audio-components">web audio components google group</a></li>
+            <li>#webaudio on freenode</li>
+            <li><a href="http://component.fm/">components.fm</a></li>
+            <li><a href="https://github.com/web-audio-components">web-audio-components github</a></li>
+            <li>Follow <a href="https://twitter.com/jsantell">@jsantell</a>, <a href="https://twitter.com/cwilso">@cwilso</a>, and <a href="https://twitter.com/meandavejustice">me</a>.</li>
+          </ul>
+        </section>
+
+        <section>
+	        <h1>Thank You</h1>
           <br />
           <br />
           <p>Twitter: <a href="http://twitter.com/meandave2020">@meandave2020</a></p>
           <p>IRC: JSON_voorhees</p>
-          <p>GH: </p><a href="http://github.com/meandavejustice">https://github.com/meandavejustice</a></p>
+          <p>GH: <a href="http://github.com/meandavejustice">https://github.com/meandavejustice</a></p>
         </section>
+
+
 			</div>
 		</div>
 
@@ -324,7 +342,69 @@ var effect = (function() {
 					{ src: 'plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
 				]
 			});
+     var samples = 128;
+     var setup = false;
+     var canvasEl = document.querySelector('#fft');
+     var playBtn = document.querySelector('.fftPlay');
+     var stopBtn = document.querySelector('.fftStop');
+     var ctx = new AudioContext();
+     var fft = ctx.createAnalyser();
+     fft.fftSize = 128;
+     fft.connect(ctx.destination);
+     var gfx = canvasEl.getContext('2d');
+     requestAnimationFrame(update);
 
+     loadFile();
+
+     function stop(src) {
+       src.stop(0);
+     }
+
+     function play(src) {
+       src.start(0);
+     }
+
+     function loadFile() {
+       var req = new XMLHttpRequest();
+       req.open("GET","./wizard.mp3",true);
+       //we can't use jquery because we need the arraybuffer type
+       req.responseType = "arraybuffer";
+       req.onload = function() {
+         //decode the loaded data
+         ctx.decodeAudioData(req.response, function(buf) {
+           var src = ctx.createBufferSource(); 
+           src.buffer = buf;
+
+           //connect them up into a chain
+           src.connect(fft);
+           setup = true;
+           playBtn.addEventListener('click', function() {
+             play(src);
+           }, false);
+
+           stopBtn.addEventListener('click', function() {
+             stop(src);
+           }, false);
+         });
+       };
+       req.send();
+       console.log("loading the song");
+     }
+
+     function update() {
+       requestAnimationFrame(update);
+       if(!setup) return;
+       gfx.clearRect(0,0,800,600);
+       gfx.fillStyle = '#333';
+       gfx.fillRect(0,0,800,600);
+       
+       var data = new Uint8Array(samples);
+       fft.getByteFrequencyData(data);
+       gfx.fillStyle = '#08FF6B';
+       for(var i=0; i<data.length; i++) {
+         gfx.fillRect(i*6,canvasEl.height + 50,5,85-data[i]);
+       }
+     }
 		</script>
 	</body>
 </html>
